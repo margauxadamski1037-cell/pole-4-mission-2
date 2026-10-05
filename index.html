@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Caisse Darty Black Friday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;600;700&display=swap">
+<style>
+/* Layout : bandeau ; consigne + élève ; barre des 5 étapes ; une carte par étape (ouverte quand la précédente est faite) ; sauvegarde */
+:root {
+  --bg: #f4f2f1;
+  --surface: #ffffff;
+  --ink: #1b1a1a;
+  --muted: #615b59;
+  --line: #d9d3d1;
+  --red: #e30613;
+  --red-soft: #fde6e7;
+  --black: #111111;
+  --ok: #1d7a3a;
+  --ok-soft: #e3f3e8;
+  --belt: #3b3836;
+  --field: #faf8f7;
+  --screen: #0f2a3a;
+  --screen-ink: #bfe6ff;
+  --paper: #fffef8;
+  --display: "Archivo Black", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "Courier New", Courier, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161414; --surface: #211e1e; --ink: #f3efee; --muted: #b3aba8; --line: #3a3534;
+    --red: #ff3b45; --red-soft: #3a1416; --black: #000000; --ok: #4cc472; --ok-soft: #142b1c; --field: #2a2626;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161414; --surface: #211e1e; --ink: #f3efee; --muted: #b3aba8; --line: #3a3534;
+  --red: #ff3b45; --red-soft: #3a1416; --black: #000000; --ok: #4cc472; --ok-soft: #142b1c; --field: #2a2626;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; margin: 0; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-inline: 16px; padding-block: 0 40px; }
+header.brand { background: var(--black); color: #fff; }
+header.brand .wrap { padding-block: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.logo { background: #e30613; color: #fff; font-family: var(--display); font-size: 20px; padding: 6px 12px; letter-spacing: .02em; }
+header.brand h1 { font-family: var(--display); font-weight: 400; font-size: clamp(20px, 3.2vw, 30px); margin: 0; text-wrap: balance; }
+header.brand h1 span { color: #ff3b45; }
+header.brand p { margin: 0; flex-basis: 100%; color: #d6d0ce; font-size: 14px; }
+
+.card { background: var(--surface); border: 1px solid var(--line); padding: 16px 18px; min-width: 0; }
+.top { margin-top: 20px; display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; }
+.top h2 { font-family: var(--display); font-weight: 400; font-size: 17px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .03em; }
+.top h2 .tag { color: var(--red); }
+.top p { margin: 0 0 6px; }
+.muted { color: var(--muted); font-size: 14px; }
+label.lb { display: block; font-weight: 600; margin-bottom: 6px; }
+input[type=text], textarea { width: 100%; font: inherit; padding: 9px 10px; border: 2px solid var(--line); background: var(--field); color: var(--ink); }
+textarea { min-height: 90px; resize: vertical; }
+input:focus-visible, textarea:focus-visible { outline: 3px solid var(--red); outline-offset: 1px; }
+
+/* barre de progression */
+.progress { margin-top: 16px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.pg { background: var(--surface); border: 2px solid var(--line); padding: 8px 10px; display: flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 600; color: var(--muted); min-width: 0; }
+.pg .n { flex: none; width: 26px; height: 26px; display: grid; place-items: center; background: var(--line); color: var(--ink); font-weight: 800; }
+.pg.cur { border-color: var(--red); color: var(--ink); }
+.pg.cur .n { background: #e30613; color: #fff; }
+.pg.done { border-color: var(--ok); color: var(--ink); }
+.pg.done .n { background: var(--ok); color: #fff; }
+
+/* étapes */
+.stepc { margin-top: 14px; border-left: 6px solid var(--line); }
+.stepc.cur { border-left-color: #e30613; }
+.stepc.done { border-left-color: var(--ok); }
+.stepc.locked { opacity: .5; }
+.stepc h3 { margin: 0; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+.stepc h3 .n { display: inline-grid; place-items: center; width: 30px; height: 30px; background: var(--black); color: #fff; font-family: var(--display); font-size: 15px; flex: none; }
+.stepc.cur h3 .n { background: #e30613; }
+.stepc.done h3 .n { background: var(--ok); }
+.stepc .goal { margin: 6px 0 0 40px; color: var(--muted); font-size: 14px; }
+.stepc .body { margin-top: 14px; }
+.stepc.locked .body, .stepc.done .body.fold { display: none; }
+.summary { margin: 8px 0 0 40px; font-size: 14px; color: var(--ok); font-weight: 600; }
+.next { margin-top: 14px; }
+
+.poste { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
+.belt { background: var(--belt); padding: 14px; }
+.belt .lbl { color: #d6d0ce; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+.items { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; min-height: 90px; }
+.item { appearance: none; font: inherit; text-align: left; background: #fff; color: #1b1a1a; border: 0; padding: 10px; cursor: pointer; display: grid; gap: 4px; }
+.item:hover, .item:focus-visible { outline: 3px solid #ff3b45; }
+.item .ico { font-size: 28px; line-height: 1; }
+.item .nm { font-weight: 700; font-size: 13px; line-height: 1.2; }
+.item .bc { font-family: var(--mono); font-size: 11px; color: #555; }
+.done-belt { color: #d6d0ce; font-size: 14px; padding: 20px; text-align: center; grid-column: 1 / -1; }
+.screen { background: var(--screen); color: var(--screen-ink); font-family: var(--mono); padding: 12px 14px; border: 8px solid #333; }
+.screen .head { color: #7fa5bb; font-size: 12px; margin-bottom: 8px; }
+.screen .row { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.screen .row span:last-child { white-space: nowrap; }
+.screen .row button { appearance: none; background: none; border: 1px solid #5d7d8f; color: #ffb3b8; font: inherit; font-size: 11px; cursor: pointer; padding: 0 5px; margin-left: 6px; }
+.screen .tot { border-top: 1px dashed #5d7d8f; margin-top: 8px; padding-top: 8px; font-size: 20px; font-weight: 700; color: #fff; display: flex; justify-content: space-between; }
+.screen .empty { color: #7fa5bb; font-size: 13px; }
+.count { margin-top: 8px; font-size: 14px; font-weight: 700; }
+
+.bubble { background: var(--surface); border: 2px solid var(--black); padding: 10px 12px; max-width: 520px; }
+.bubble b { color: var(--red); }
+.tpe { margin-top: 12px; background: #222; color: #9fe6a0; font-family: var(--mono); padding: 14px; border-radius: 12px; max-width: 380px; font-size: 14px; }
+.tpe .err { color: #ff8a8f; font-weight: 700; }
+.pay { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+.opt { appearance: none; font: inherit; font-weight: 700; background: var(--surface); color: var(--ink); border: 2px solid var(--line); padding: 12px; cursor: pointer; text-align: left; }
+.opt .ic { font-size: 22px; display: block; }
+.opt:hover { border-color: var(--red); }
+.opt[aria-pressed="true"] { border-color: var(--red); background: var(--red-soft); }
+.opt:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+.q { margin-top: 12px; }
+.q > label { display: block; font-weight: 700; margin-bottom: 6px; }
+
+.ticket { margin-top: 12px; background: var(--paper); color: #111; font-family: var(--mono); font-size: 13px; padding: 14px 16px; border: 1px dashed #999; max-width: 400px; }
+.ticket .c { text-align: center; }
+.ticket .r { display: flex; justify-content: space-between; gap: 8px; }
+.ticket .r span:last-child { white-space: nowrap; }
+.ticket hr { border: 0; border-top: 1px dashed #999; margin: 8px 0; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { appearance: none; font: inherit; font-weight: 700; padding: 10px 16px; border: 2px solid var(--black); cursor: pointer; }
+.btn.primary { background: #e30613; border-color: #e30613; color: #fff; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.msgline { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+.msgline.warn { color: var(--red); font-weight: 700; }
+.linkbox { margin-top: 12px; border: 2px solid var(--red); background: var(--red-soft); padding: 12px 14px; }
+.linkbox p { margin: 0 0 8px; font-size: 14px; }
+.linkbox .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.linkbox input { flex: 1 1 200px; min-width: 0; font-size: 13px; }
+.linkbox .small { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+
+@media (max-width: 900px) { .top, .poste { grid-template-columns: 1fr; } .progress { grid-template-columns: repeat(5, minmax(0, 1fr)); } .pg .t { display: none; } }
+</style>
+</head>
+<body>
+
+
+<header class="brand">
+  <div class="wrap">
+    <div class="logo">DARTY</div>
+    <h1>La caisse <span>Darty</span></h1>
+    <p>Magasin Darty de Pont-à-Mousson · Pôle caisse et services · Mission 2 · Vendredi 27 novembre 2026 – caisse n° 2</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="top">
+    <div class="card">
+      <h2><span class="tag">10 h 30</span> · Encaisser M. Ryan Mendès</h2>
+      <p>M. Mendès pose ses achats sur le tapis de votre caisse. Il est pressé. Suivez les <b>5 étapes</b> dans l'ordre : chaque étape s'ouvre quand la précédente est terminée.</p>
+      <p class="muted">Aidez-vous de la fiche « Les moyens de paiement » de votre document Word.</p>
+    </div>
+    <div class="card">
+      <label class="lb" for="nom">Prénom et nom de l'élève</label>
+      <input id="nom" type="text" autocomplete="off" placeholder="Ex. : Léa MARTIN">
+      <p class="muted" style="margin-top:8px">Votre nom apparaîtra sur le ticket de caisse.</p>
+    </div>
+  </section>
+
+  <nav class="progress" id="progress" aria-label="Étapes de la mission"></nav>
+
+  <!-- ÉTAPE 1 -->
+  <section class="card stepc" data-step="1">
+    <h3><span class="n">1</span>Scannez les articles du client</h3>
+    <p class="goal">Cliquez sur chaque article du tapis pour le scanner. Vérifiez qu'ils apparaissent tous sur l'écran de caisse.</p>
+    <p class="summary" id="sum1" hidden></p>
+    <div class="body">
+      <div class="poste">
+        <div class="belt"><div class="lbl">Tapis de caisse</div><div class="items" id="belt"></div></div>
+        <div>
+          <div class="screen" aria-live="polite">
+            <div class="head">DARTY PONT-À-MOUSSON · CAISSE 2</div>
+            <div id="lines"></div>
+            <div class="tot"><span>TOTAL</span><span id="total">0,00 €</span></div>
+          </div>
+          <p class="count" id="count"></p>
+        </div>
+      </div>
+      <div class="next"><button class="btn primary" type="button" data-go="2">J'ai scanné tous les articles → étape 2</button></div>
+    </div>
+  </section>
+
+  <!-- ÉTAPE 2 -->
+  <section class="card stepc" data-step="2">
+    <h3><span class="n">2</span>Lancez le paiement demandé par le client</h3>
+    <p class="goal">Écoutez ce que demande le client, puis lancez ce paiement sur le terminal (TPE).</p>
+    <p class="summary" id="sum2" hidden></p>
+    <div class="body">
+      <div class="bubble">« Ça fait combien ? … D'accord. <b>Je paie en sans contact</b>, ça ira plus vite ! »</div>
+      <div class="actions" style="margin-top:12px"><button class="btn primary" type="button" id="tryTpe">Lancer le paiement sans contact sur le TPE</button></div>
+      <div class="tpe" id="tpe">TPE prêt.</div>
+      <div class="next"><button class="btn primary" type="button" data-go="3">J'ai lu le message du TPE → étape 3</button></div>
+    </div>
+  </section>
+
+  <!-- ÉTAPE 3 -->
+  <section class="card stepc" data-step="3">
+    <h3><span class="n">3</span>Expliquez la situation au client</h3>
+    <p class="goal">Le paiement a été refusé. Écrivez ce que vous dites à M. Mendès : pourquoi c'est refusé et ce que vous lui proposez.</p>
+    <p class="summary" id="sum3" hidden></p>
+    <div class="body">
+      <div class="q"><label for="dit">Ce que je dis au client</label><textarea id="dit" placeholder="Monsieur Mendès, …"></textarea></div>
+      <div class="next"><button class="btn primary" type="button" data-go="4">J'ai expliqué la situation → étape 4</button></div>
+    </div>
+  </section>
+
+  <!-- ÉTAPE 4 -->
+  <section class="card stepc" data-step="4">
+    <h3><span class="n">4</span>Choisissez le moyen de paiement avec le client</h3>
+    <p class="goal">Cliquez sur le moyen de paiement que M. Mendès utilise finalement, puis expliquez votre choix.</p>
+    <p class="summary" id="sum4" hidden></p>
+    <div class="body">
+      <div class="pay" id="pay">
+        <button type="button" class="opt" data-v="sc" aria-pressed="false"><span class="ic">📶</span>Carte en sans contact</button>
+        <button type="button" class="opt" data-v="cb" aria-pressed="false"><span class="ic">💳</span>Carte bancaire avec code</button>
+        <button type="button" class="opt" data-v="mob" aria-pressed="false"><span class="ic">📱</span>Paiement mobile</button>
+        <button type="button" class="opt" data-v="4x" aria-pressed="false"><span class="ic">🧾</span>Paiement en 4 fois</button>
+        <button type="button" class="opt" data-v="esp" aria-pressed="false"><span class="ic">💶</span>Espèces</button>
+      </div>
+      <div class="q"><label for="pq">Pourquoi ce moyen de paiement ?</label><textarea id="pq" placeholder="J'ai proposé ce moyen de paiement car…"></textarea></div>
+      <div class="next"><button class="btn primary" type="button" data-go="5">Le client a payé → étape 5</button></div>
+    </div>
+  </section>
+
+  <!-- ÉTAPE 5 -->
+  <section class="card stepc" data-step="5">
+    <h3><span class="n">5</span>Imprimez le ticket et enregistrez votre travail</h3>
+    <p class="goal">Imprimez le ticket, faites une capture d'écran, puis enregistrez votre travail et collez le lien dans votre document Word.</p>
+    <div class="body">
+      <div class="actions"><button class="btn primary" id="print" type="button">Imprimer le ticket</button></div>
+      <div id="ticketzone"></div>
+      <div class="actions" style="margin-top:16px">
+        <button class="btn primary" id="save" type="button">Enregistrer mon travail</button>
+      </div>
+      <div class="linkbox" id="linkbox" hidden>
+        <p><b>Votre lien de sauvegarde est prêt.</b> Copiez-le et collez-le dans votre document Word : il permet de retrouver votre travail sur n'importe quel ordinateur.</p>
+        <div class="row"><input id="link" type="text" readonly aria-label="Lien de sauvegarde"><button class="btn primary" id="copy" type="button">Copier le lien</button></div>
+        <p class="small">Si vous modifiez votre travail, cliquez de nouveau sur « Enregistrer mon travail » et remplacez l'ancien lien.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <div class="actions"><button class="btn ghost" id="reset" type="button">Tout recommencer</button></div>
+    <p class="msgline" id="msg" aria-live="polite">Commencez par l'étape 1.</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var APP = "darty-caisse-mendes", KEY = "darty-caisse-mendes";
+  var ITEMS = [
+    { id: "tv", ico: "📺", nm: "TV 55\" 4K UHD Smart TV", ref: "D001", bc: "3700691400017", p: 480.00 },
+    { id: "su", ico: "🔩", nm: "Support mural orientable", ref: "S014", bc: "3700691400147", p: 59.99 },
+    { id: "hd", ico: "🔗", nm: "Câble HDMI 2.1 – 2 m", ref: "C021", bc: "3700691400215", p: 19.99 },
+    { id: "bs", ico: "🔊", nm: "Barre de son", ref: "D008", bc: "3700691400086", p: 150.00 },
+    { id: "mp", ico: "🔌", nm: "Multiprise parafoudre 4 prises", ref: "P032", bc: "3700691400322", p: 24.99 }
+  ];
+  var STEPS = ["Scanner", "Lancer le paiement", "Expliquer", "Choisir le paiement", "Ticket"];
+  var PAYN = { sc: "Carte en sans contact", cb: "Carte bancaire avec code", mob: "Paiement mobile", "4x": "Paiement en 4 fois", esp: "Espèces" };
+  var byId = {}; ITEMS.forEach(function (i) { byId[i.id] = i; });
+  var S = { step: 1, scanned: [], tpe: 0, pay: "", printed: 0 };
+  var nom = document.getElementById("nom"), msg = document.getElementById("msg");
+  var dit = document.getElementById("dit"), pq = document.getElementById("pq");
+
+  function eur(x) { return x.toFixed(2).replace(".", ",") + " €"; }
+  function total() { return Math.round(S.scanned.reduce(function (s, id) { return s + byId[id].p; }, 0) * 100) / 100; }
+  function say(t, warn) { msg.textContent = t; msg.classList.toggle("warn", !!warn); }
+
+  function render() {
+    // barre de progression
+    var pr = document.getElementById("progress"); pr.innerHTML = "";
+    STEPS.forEach(function (t, i) {
+      var n = i + 1, d = document.createElement("div");
+      d.className = "pg" + (n < S.step ? " done" : n === S.step ? " cur" : "");
+      d.innerHTML = '<span class="n">' + (n < S.step ? "✓" : n) + '</span><span class="t">' + t + '</span>';
+      pr.appendChild(d);
+    });
+    document.querySelectorAll(".stepc").forEach(function (c) {
+      var n = +c.dataset.step;
+      c.classList.toggle("cur", n === S.step); c.classList.toggle("done", n < S.step); c.classList.toggle("locked", n > S.step);
+      var b = c.querySelector(".body"); b.classList.toggle("fold", n < S.step);
+      var nx = c.querySelector(".next"); if (nx) nx.hidden = n !== S.step;
+    });
+    // résumés des étapes terminées
+    sum(1, S.step > 1 ? S.scanned.length + " articles scannés – total " + eur(total()) : "");
+    sum(2, S.step > 2 ? "Paiement sans contact lancé : refusé par le TPE" : "");
+    sum(3, S.step > 3 ? "Message au client : « " + dit.value.trim().slice(0, 80) + (dit.value.trim().length > 80 ? "…" : "") + " »" : "");
+    sum(4, S.step > 4 ? "Moyen de paiement : " + (PAYN[S.pay] || "?") : "");
+    drawBelt(); drawTpe(); drawPay(); drawTicket();
+  }
+  function sum(n, t) { var e = document.getElementById("sum" + n); e.hidden = !t; e.textContent = t ? "✓ " + t : ""; }
+
+  function drawBelt() {
+    var belt = document.getElementById("belt"); belt.innerHTML = "";
+    ITEMS.forEach(function (it) {
+      if (S.scanned.indexOf(it.id) >= 0) return;
+      var b = document.createElement("button"); b.type = "button"; b.className = "item";
+      b.innerHTML = '<span class="ico" aria-hidden="true">' + it.ico + '</span><span class="nm">' + it.nm + '</span><span class="bc">' + it.bc + '</span>';
+      b.setAttribute("aria-label", "Scanner : " + it.nm);
+      b.addEventListener("click", function () { S.scanned.push(it.id); save(); render(); });
+      belt.appendChild(b);
+    });
+    if (!belt.children.length) belt.innerHTML = '<div class="done-belt">Le tapis est vide.</div>';
+    var lines = document.getElementById("lines"); lines.innerHTML = "";
+    if (!S.scanned.length) lines.innerHTML = '<div class="empty">Aucun article scanné</div>';
+    S.scanned.forEach(function (id) {
+      var it = byId[id], r = document.createElement("div"); r.className = "row";
+      r.innerHTML = '<span>' + it.ref + ' ' + it.nm + '</span><span>' + eur(it.p) + (S.step === 1 ? '<button type="button" aria-label="Annuler la ligne">annuler</button>' : '') + '</span>';
+      var bt = r.querySelector("button");
+      if (bt) bt.addEventListener("click", function () { S.scanned = S.scanned.filter(function (x) { return x !== id; }); save(); render(); });
+      lines.appendChild(r);
+    });
+    document.getElementById("total").textContent = eur(total());
+    document.getElementById("count").textContent = S.scanned.length + " article(s) scanné(s) sur " + ITEMS.length;
+  }
+  function drawTpe() {
+    document.getElementById("tpe").innerHTML = S.tpe
+      ? "Montant : " + eur(total()) + "<br>Paiement sans contact…<br><span class=\"err\">REFUSÉ<br>MONTANT SUPÉRIEUR AU PLAFOND<br>DU PAIEMENT SANS CONTACT (50,00 €)</span>"
+      : "TPE prêt. Montant : " + eur(total());
+  }
+  function drawPay() { document.querySelectorAll("#pay .opt").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.v === S.pay ? "true" : "false"); }); }
+  function drawTicket() {
+    var z = document.getElementById("ticketzone");
+    if (!S.printed) { z.innerHTML = ""; return; }
+    var h = '<div class="ticket"><div class="c"><b>DARTY PONT-À-MOUSSON</b><br>Caisse 2 – 27/11/2026 10:36<br>Vendeur : ' +
+      (nom.value.trim() || "…").replace(/[<>&]/g, "") + '</div><hr>';
+    S.scanned.forEach(function (id) { var it = byId[id]; h += '<div class="r"><span>' + it.ref + ' ' + it.nm + '</span><span>' + eur(it.p) + '</span></div>'; });
+    h += '<hr><div class="r"><b>TOTAL TTC</b><b>' + eur(total()) + '</b></div><div>Payé : ' + (PAYN[S.pay] || "?") + '</div><hr><div class="c">Client : M. Ryan MENDÈS<br>Merci de votre visite !</div></div>';
+    z.innerHTML = h;
+  }
+
+  // validations des étapes
+  function canGo(to) {
+    if (to === 2 && S.scanned.length < ITEMS.length) return "Il reste des articles sur le tapis : scannez-les tous.";
+    if (to === 3 && !S.tpe) return "Lancez d'abord le paiement demandé par le client.";
+    if (to === 4 && dit.value.trim().length < 20) return "Écrivez ce que vous dites au client (au moins une phrase complète).";
+    if (to === 5 && !S.pay) return "Cliquez sur le moyen de paiement utilisé.";
+    if (to === 5 && pq.value.trim().length < 10) return "Expliquez pourquoi vous avez choisi ce moyen de paiement.";
+    return "";
+  }
+  document.querySelectorAll("[data-go]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var to = +b.dataset.go, err = canGo(to);
+      if (err) { say(err, true); return; }
+      S.step = to; save(); render(); say("Étape " + to + " : " + STEPS[to - 1] + ".");
+      var c = document.querySelector('.stepc[data-step="' + to + '"]'); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+  document.getElementById("tryTpe").addEventListener("click", function () { S.tpe = 1; save(); render(); });
+  document.querySelectorAll("#pay .opt").forEach(function (b) { b.addEventListener("click", function () { S.pay = b.dataset.v; save(); render(); }); });
+  document.getElementById("print").addEventListener("click", function () { S.printed = 1; save(); render(); say("Ticket imprimé : faites une capture d'écran, puis enregistrez votre travail."); });
+  [dit, pq].forEach(function (el) { el.addEventListener("input", save); });
+  nom.addEventListener("input", function () { save(); drawTicket(); });
+
+  // ---------- sauvegarde
+  function state() { return { app: APP, nom: nom.value, st: S.step, s: S.scanned.join(","), t: S.tpe, pay: S.pay, pr: S.printed, dit: dit.value, pq: pq.value }; }
+  function apply(o) {
+    nom.value = o.nom || ""; dit.value = o.dit || ""; pq.value = o.pq || "";
+    S = { step: Math.min(5, Math.max(1, +o.st || 1)), scanned: (o.s || "").split(",").filter(function (x) { return byId[x]; }), tpe: +o.t || 0, pay: o.pay || "", printed: +o.pr || 0 };
+    render();
+  }
+  function enc(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  function dec(t) { t = t.replace(/-/g, "+").replace(/_/g, "/"); while (t.length % 4) t += "="; return JSON.parse(decodeURIComponent(escape(atob(t)))); }
+  function save() { try { history.replaceState(null, "", "#t=" + enc(state())); } catch (e) {} try { localStorage.setItem(KEY, JSON.stringify(state())); } catch (e) {} }
+
+  var linkbox = document.getElementById("linkbox"), linkIn = document.getElementById("link");
+  document.getElementById("save").addEventListener("click", function () {
+    save(); linkIn.value = location.href.split("#")[0] + "#t=" + enc(state());
+    linkbox.hidden = false; linkIn.focus(); linkIn.select();
+    say("Travail enregistré. Copiez le lien et collez-le dans votre document Word.");
+  });
+  document.getElementById("copy").addEventListener("click", function () {
+    var done = function () { say("Lien copié ! Collez-le dans votre document Word (Ctrl + V)."); };
+    try { navigator.clipboard.writeText(linkIn.value).then(done, function () { linkIn.select(); document.execCommand("copy"); done(); }); }
+    catch (e) { linkIn.select(); try { document.execCommand("copy"); done(); } catch (e2) { say("Sélectionnez le lien puis faites Ctrl + C pour le copier.", true); } }
+  });
+  var armed = false, resetBtn = document.getElementById("reset");
+  resetBtn.addEventListener("click", function () {
+    if (!armed) { armed = true; resetBtn.textContent = "Confirmer : tout recommencer ?"; return; }
+    armed = false; resetBtn.textContent = "Tout recommencer";
+    apply({ nom: nom.value }); save(); linkbox.hidden = true; say("Mission remise à zéro. Commencez par l'étape 1.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  var loaded = false;
+  if (location.hash.indexOf("#t=") === 0) {
+    try { var o = dec(location.hash.slice(3)); if (o.app === APP) { apply(o); loaded = true; say("Travail retrouvé grâce à votre lien de sauvegarde."); } }
+    catch (e) { say("Ce lien de sauvegarde est incomplet. Vérifiez que vous avez bien copié tout le lien.", true); }
+  }
+  if (!loaded) { try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv && sv.app === APP && sv.st) { apply(sv); loaded = true; say("Votre travail précédent a été retrouvé sur cet ordinateur."); } } catch (e) {} }
+  if (!loaded) render();
+})();
+</script>
+
+</body>
+</html>
